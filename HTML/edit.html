@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css"
+        integrity="sha512-SbiR/eusphKoMVVXysTKG/7VseWii+Y3FdHrt0EpKgpToZeemhqHeZeLWLhJutz/2ut2Vw1uQEj2MbRF+TVBUA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css"
+        integrity="sha512-SzlrxWUlpfuzQ+pcUCosxcglQRNAq/DZjVsC0lE40xsADsfeQoEypE+enwcOiGjk/bSuGGKHEyjSoQ1zVisanQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js"
+        integrity="sha512-STof4xm1wgkfm7heWqFJVn58Hm3EtS31XFaagaa8VMReCXAkQnJZ+jEy8PCC/iT18dFy95WcExNHFTqLyp72eQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.min.js"
+        integrity="sha512-1/RvZTcCDEUjY/CypiMz+iqqtaoQfAITmNSJY17Myp4Ms5mdxPS5UV7iOfdZoxcGhzFbOm6sntTKJppjvuhg4g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <title>Student Portal - Edit</title>
+</head>
+
+<body>
+    <header id="nav-bar"></header>
+
+    <div class="container mt-5">
+
+        <div class="row div-center">
+            <div class="col-sm-12">
+                <div class="card" style="width: 600px; margin: 0 auto;">
+                    <form id="Edit-Profile-Form" class="card-body cardbody-color p-md-5">
+                        <h2 class="text-center text-dark">Edit Details</h2>
+                        <br>
+                        <p class="text-danger" id="Edit-Profile-Error"></p>
+
+                        <div class="mb-3">
+                            <input id="name" type="text" placeholder="Name" class="form-control" required />
+                            <p id="Name" class="text-danger"></p>
+                        </div>
+                        <div class="mb-3">
+                            <input id="branch" type="text" placeholder="Branch" class="form-control" required />
+                            <p id="Branch" class="text-danger"></p>
+                        </div>
+                        <div class="mb-3">
+                            <lable>Date of Birth</lable>
+                            <input id="dob" type="date" class="form-control" required />
+                            <p id="Dob" class="text-danger"></p>
+                        </div>
+                        <div class="mb-3">
+                            <input id="cgpa" type="number" placeholder="CGPA" class="form-control" required />
+                            <p id="Cgpa" class="text-danger"></p>
+                        </div>
+                        <div class="mb-3">
+                            <input id="email" type="email" placeholder="E-Mail" class="form-control" required />
+                            <p id="Email" class="text-danger"></p>
+                        </div>
+                        <br>
+                        <div class="text-center">
+                            <input type="button" id="Edit-Profile-Button" value="Update Profile" class="btn btn-color" style="background-color: yellow;" />
+                        </div>
+                        <div class="form-text text-center text-dark">
+                            <a href="dashboard.html">Return to Dashboard</a>
+                        </div>
+
+                    </form>
+
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+    <script>
+
+        $(document).ready(function () {
+            if (localStorage.getItem("userid") == null) {
+                window.location.href = "Login.html";
+            }
+            $("#nav-bar").load("Navbar.html");
+
+            getDetails();
+        })
+        $("#Edit-Profile-Button").click(function (e) {
+            if (!validated()) return;
+            $("#Edit-Profile-Error").text("");
+            var rollno = localStorage.getItem("rollno");
+
+            $.ajax({
+                url: `https://localhost:5001/api/Student/${rollno}`,
+                headers: {
+                    'Content-Type': 'application/json;charset=UTF-8',
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Method': '*'
+                },
+                type: "put",
+                contentType: "application/json",
+                data: JSON.stringify({
+                    rollno: rollno,
+                    name: $("#name").val(),
+                    branch: $("#branch").val(),
+                    dob: $("#dob").val(),
+                    cgpa: $("#cgpa").val(),
+                    email: $("#email").val()
+                }),
+                success: function (result, status, xhr) {
+                    console.log(result);
+                    window.location.href = "dashboard.html";
+                    
+                },
+                error: function (xhr, status, error) {
+                    var response = JSON.parse(xhr.responseText);
+                    $("#Edit-Profile-Error").text(response.message);
+
+                    var errors = response.errors;
+                    if (errors) {
+
+                        if (errors.Username)
+                            $("#Username").text(errors.Username[0]);
+                        if (errors.Password)
+                            $("#Password").text(errors.Password[0]);
+                    }
+                    console.log(errors);
+                }
+            });
+
+        });
+
+        function validated() {
+            var errors = 0;
+            if ($("#name").val() == "") {
+                $("#Name").text("Please enter the name");
+                errors += 1;
+            }
+            if ($("#branch").val() == "") {
+                $("#Branch").text("Please enter the branch");
+                errors += 1;
+            }
+            if ($("#dob").val() == "") {
+                $("#Dob").text("Please enter the date of birth");
+                errors += 1;
+            }
+            if ($("#cgpa").val() == "") {
+                $("#Cgpa").text("Please enter the CGPA");
+                errors += 1;
+            }
+            else if ($("#cgpa").val() < 0 || $("#cgpa").val() > 10) {
+                $("#Cgpa").text("CGPA can range from 0 to 10");
+                errors += 1;
+            }
+            if ($("#email").val() == "") {
+                $("#Email").text("Please enter the E-Mail");
+                errors += 1;
+            }
+            if (errors == 0) return true;
+            return false;
+        }
+
+        function getDetails() {
+            var rollno = localStorage.getItem("rollno");
+            
+            $.ajax({
+                url: `https://localhost:5001/api/Student/${rollno}`,
+                type: "get",
+                headers: {
+                    'Content-Type': 'application/json;charset=UTF-8',
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Method': '*'
+                },
+                contentType: "application/json",
+                success: function (result, status, xhr) {
+                    $("#name").val(result["name"]);
+                    $("#branch").val(result["branch"]);
+                    $("#dob").val(new Date(result["dob"] + 'Z').toISOString().substr(0, 10));
+                    $("#cgpa").val(result["cgpa"]);
+                    $("#email").val(result["email"]);
+                },
+                error: function (xhr, status, error) {
+                    console.log(xhr)
+                }
+            });
+        }
+
+
+
+    </script>
+</body>
+
+</html>
